@@ -4,6 +4,7 @@ import br.com.fiap.postech.machinecheck.controller.exception.ControllerNotFoundE
 import br.com.fiap.postech.machinecheck.dto.CheckDTO;
 import br.com.fiap.postech.machinecheck.entities.Check;
 import br.com.fiap.postech.machinecheck.repository.CheckRepository;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,7 +48,7 @@ public class CheckService {
             check.setExecutante(checkDTO.executante());
 
             check = checkRepository.save(check);
-            return toDTO(check);
+            return toDTO(Boolean.FALSE, check);
         } catch (EntityNotFoundException e) {
             throw new ControllerNotFoundException("Usuário não encontrado com o ID: " + id);
         }
@@ -71,7 +72,12 @@ public class CheckService {
     }
 
     private CheckDTO toDTO(Check check) {
+        return toDTO(Boolean.TRUE, check);
+    }
+
+    private CheckDTO toDTO(Boolean includeId, Check check) {
         return new CheckDTO(
+                getId(includeId, check),
                 check.getMaquina(),
                 check.getObservacao(),
                 check.getComponente(),
@@ -82,5 +88,12 @@ public class CheckService {
                 check.getUrlVideo(),
                 check.getExecutante()
         );
+    }
+
+    private Long getId(boolean includeId, Check check) {
+        if (includeId) {
+            return check.getId();
+        }
+        return null;
     }
 }
